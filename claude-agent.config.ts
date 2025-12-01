@@ -2,7 +2,7 @@ import { defineConfig } from './src/types.js';
 
 export default defineConfig({
   // Model selection
-  model: 'claude-sonnet-4-5-20250929',
+  model: 'claude-opus-4-5',
 
   // Execution limits
   maxTurns: 50,
@@ -11,7 +11,7 @@ export default defineConfig({
   // allowedTools: ['Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep'],
 
   // Permission mode: 'default' | 'acceptEdits' | 'bypassPermissions'
-  permissionMode: 'default',
+  permissionMode: 'bypassPermissions',
 
   // Working directory (defaults to cwd)
   cwd: process.cwd(),
