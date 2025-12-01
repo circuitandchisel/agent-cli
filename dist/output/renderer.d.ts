@@ -81,6 +81,14 @@ export declare class Renderer {
      */
     showInterrupt(message: string): void;
     /**
+     * Show permission prompt for tool approval
+     */
+    showPermissionPrompt(toolName: string, input: Record<string, unknown>, reason?: string): void;
+    /**
+     * Show permission result
+     */
+    showPermissionResult(allowed: boolean, always?: boolean): void;
+    /**
      * Show session initialized
      */
     showSessionInit(tools: string[], mcpServers: string[]): void;

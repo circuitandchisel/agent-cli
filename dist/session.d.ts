@@ -13,6 +13,10 @@ export declare class Session {
     private isRunning;
     constructor(config: Config);
     /**
+     * Handle tool permission requests from the SDK
+     */
+    private handleCanUseTool;
+    /**
      * Start the session
      */
     start(): Promise<void>;

@@ -12,6 +12,7 @@ export declare class InputHandler {
     private isCapturing;
     private captureBuffer;
     private pendingResolve;
+    private pendingPermissionResolve;
     constructor(colorScheme?: 'default' | 'light' | 'minimal');
     /**
      * Set up raw mode handling for interrupt detection
@@ -21,6 +22,10 @@ export declare class InputHandler {
      * Handle a line of input
      */
     private handleLine;
+    /**
+     * Parse permission response from user input
+     */
+    private parsePermissionResponse;
     /**
      * Submit an interrupt
      */
@@ -33,6 +38,11 @@ export declare class InputHandler {
      * Wait for user input (prompt or command)
      */
     getInput(): Promise<InputEvent>;
+    /**
+     * Wait for permission input (y/n/a)
+     * This works even during streaming as it takes priority
+     */
+    getPermissionInput(): Promise<'yes' | 'no' | 'always'>;
     /**
      * Enable capture mode for interrupts during streaming
      */

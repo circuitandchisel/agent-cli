@@ -20,6 +20,9 @@ export class InputHandler {
   // Pending prompt resolver
   private pendingResolve: ((event: InputEvent) => void) | null = null;
 
+  // Permission prompt resolver
+  private pendingPermissionResolve: ((response: 'yes' | 'no' | 'always') => void) | null = null;
+
   constructor(colorScheme: 'default' | 'light' | 'minimal' = 'default') {
     this.colorScheme = colorScheme;
 
@@ -75,6 +78,20 @@ export class InputHandler {
   private handleLine(line: string): void {
     const trimmed = line.trim();
 
+    // Check if we're waiting for permission input
+    if (this.pendingPermissionResolve) {
+      const response = this.parsePermissionResponse(trimmed);
+      if (response) {
+        const resolve = this.pendingPermissionResolve;
+        this.pendingPermissionResolve = null;
+        resolve(response);
+        return;
+      }
+      // Invalid response - prompt again
+      process.stdout.write('  Please enter y/n/a: ');
+      return;
+    }
+
     // Add to history if non-empty
     if (trimmed) {
       this.history.push(trimmed);
@@ -110,6 +127,24 @@ export class InputHandler {
   }
 
   /**
+   * Parse permission response from user input
+   */
+  private parsePermissionResponse(input: string): 'yes' | 'no' | 'always' | null {
+    const normalized = input.toLowerCase().trim();
+
+    if (normalized === 'y' || normalized === 'yes') {
+      return 'yes';
+    }
+    if (normalized === 'n' || normalized === 'no') {
+      return 'no';
+    }
+    if (normalized === 'a' || normalized === 'always' || normalized === 'always allow') {
+      return 'always';
+    }
+    return null;
+  }
+
+  /**
    * Submit an interrupt
    */
   private submitInterrupt(text: string): void {
@@ -134,6 +169,17 @@ export class InputHandler {
     return new Promise((resolve) => {
       this.pendingResolve = resolve;
       this.showPrompt();
+    });
+  }
+
+  /**
+   * Wait for permission input (y/n/a)
+   * This works even during streaming as it takes priority
+   */
+  async getPermissionInput(): Promise<'yes' | 'no' | 'always'> {
+    return new Promise((resolve) => {
+      this.pendingPermissionResolve = resolve;
+      process.stdout.write('  > ');
     });
   }
 

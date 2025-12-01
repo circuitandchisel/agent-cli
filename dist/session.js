@@ -29,6 +29,7 @@ export class Session {
             systemPrompt: config.systemPrompt,
             cwd: config.cwd || process.cwd(),
             includePartialMessages: true,
+            canUseTool: this.handleCanUseTool.bind(this),
         });
         this.state = {
             isStreaming: false,
@@ -39,6 +40,42 @@ export class Session {
         this.inputHandler.onInterrupt((text) => {
             this.handleInterrupt(text);
         });
+    }
+    /**
+     * Handle tool permission requests from the SDK
+     */
+    async handleCanUseTool(toolName, input, options) {
+        // Show the permission prompt
+        this.renderer.showPermissionPrompt(toolName, input, options.decisionReason);
+        // Wait for user response
+        const response = await this.inputHandler.getPermissionInput();
+        // Handle the response
+        switch (response) {
+            case 'yes':
+                this.renderer.showPermissionResult(true, false);
+                return {
+                    behavior: 'allow',
+                    updatedInput: input,
+                    toolUseID: options.toolUseID,
+                };
+            case 'always':
+                this.renderer.showPermissionResult(true, true);
+                return {
+                    behavior: 'allow',
+                    updatedInput: input,
+                    updatedPermissions: options.suggestions,
+                    toolUseID: options.toolUseID,
+                };
+            case 'no':
+            default:
+                this.renderer.showPermissionResult(false);
+                return {
+                    behavior: 'deny',
+                    message: 'User denied permission for this tool',
+                    interrupt: false,
+                    toolUseID: options.toolUseID,
+                };
+        }
     }
     /**
      * Start the session

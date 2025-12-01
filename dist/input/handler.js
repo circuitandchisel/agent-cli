@@ -15,6 +15,8 @@ export class InputHandler {
     captureBuffer = '';
     // Pending prompt resolver
     pendingResolve = null;
+    // Permission prompt resolver
+    pendingPermissionResolve = null;
     constructor(colorScheme = 'default') {
         this.colorScheme = colorScheme;
         this.rl = readline.createInterface({
@@ -64,6 +66,19 @@ export class InputHandler {
      */
     handleLine(line) {
         const trimmed = line.trim();
+        // Check if we're waiting for permission input
+        if (this.pendingPermissionResolve) {
+            const response = this.parsePermissionResponse(trimmed);
+            if (response) {
+                const resolve = this.pendingPermissionResolve;
+                this.pendingPermissionResolve = null;
+                resolve(response);
+                return;
+            }
+            // Invalid response - prompt again
+            process.stdout.write('  Please enter y/n/a: ');
+            return;
+        }
         // Add to history if non-empty
         if (trimmed) {
             this.history.push(trimmed);
@@ -96,6 +111,22 @@ export class InputHandler {
         }
     }
     /**
+     * Parse permission response from user input
+     */
+    parsePermissionResponse(input) {
+        const normalized = input.toLowerCase().trim();
+        if (normalized === 'y' || normalized === 'yes') {
+            return 'yes';
+        }
+        if (normalized === 'n' || normalized === 'no') {
+            return 'no';
+        }
+        if (normalized === 'a' || normalized === 'always' || normalized === 'always allow') {
+            return 'always';
+        }
+        return null;
+    }
+    /**
      * Submit an interrupt
      */
     submitInterrupt(text) {
@@ -118,6 +149,16 @@ export class InputHandler {
         return new Promise((resolve) => {
             this.pendingResolve = resolve;
             this.showPrompt();
+        });
+    }
+    /**
+     * Wait for permission input (y/n/a)
+     * This works even during streaming as it takes priority
+     */
+    async getPermissionInput() {
+        return new Promise((resolve) => {
+            this.pendingPermissionResolve = resolve;
+            process.stdout.write('  > ');
         });
     }
     /**

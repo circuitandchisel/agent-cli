@@ -3,6 +3,7 @@ import { createMessageHandler } from './agent/messages.js';
 import { InputHandler, createInputHandler } from './input/handler.js';
 import { Renderer, createRenderer } from './output/renderer.js';
 import type { Config, SessionState } from './types.js';
+import type { CanUseTool, PermissionResult, PermissionUpdate } from '@anthropic-ai/claude-agent-sdk';
 
 /**
  * Session manager - orchestrates the conversation lifecycle
@@ -33,6 +34,7 @@ export class Session {
       systemPrompt: config.systemPrompt,
       cwd: config.cwd || process.cwd(),
       includePartialMessages: true,
+      canUseTool: this.handleCanUseTool.bind(this),
     });
 
     this.state = {
@@ -45,6 +47,58 @@ export class Session {
     this.inputHandler.onInterrupt((text) => {
       this.handleInterrupt(text);
     });
+  }
+
+  /**
+   * Handle tool permission requests from the SDK
+   */
+  private async handleCanUseTool(
+    toolName: string,
+    input: Record<string, unknown>,
+    options: {
+      signal: AbortSignal;
+      suggestions?: PermissionUpdate[];
+      blockedPath?: string;
+      decisionReason?: string;
+      toolUseID: string;
+      agentID?: string;
+    }
+  ): Promise<PermissionResult> {
+    // Show the permission prompt
+    this.renderer.showPermissionPrompt(toolName, input, options.decisionReason);
+
+    // Wait for user response
+    const response = await this.inputHandler.getPermissionInput();
+
+    // Handle the response
+    switch (response) {
+      case 'yes':
+        this.renderer.showPermissionResult(true, false);
+        return {
+          behavior: 'allow',
+          updatedInput: input,
+          toolUseID: options.toolUseID,
+        };
+
+      case 'always':
+        this.renderer.showPermissionResult(true, true);
+        return {
+          behavior: 'allow',
+          updatedInput: input,
+          updatedPermissions: options.suggestions,
+          toolUseID: options.toolUseID,
+        };
+
+      case 'no':
+      default:
+        this.renderer.showPermissionResult(false);
+        return {
+          behavior: 'deny',
+          message: 'User denied permission for this tool',
+          interrupt: false,
+          toolUseID: options.toolUseID,
+        };
+    }
   }
 
   /**

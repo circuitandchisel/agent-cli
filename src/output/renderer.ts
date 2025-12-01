@@ -308,6 +308,49 @@ export class Renderer {
   }
 
   /**
+   * Show permission prompt for tool approval
+   */
+  showPermissionPrompt(
+    toolName: string,
+    input: Record<string, unknown>,
+    reason?: string
+  ): void {
+    console.log();
+    console.log(
+      `${this.palette.warning(symbols.warning)} ${this.palette.warning('Permission required:')} ${this.palette.tool(toolName)}`
+    );
+
+    // Show brief of what the tool wants to do
+    const brief = this.formatToolBrief(toolName, input);
+    if (brief) {
+      console.log(`  ${this.palette.dim(brief)}`);
+    }
+
+    // Show reason if provided
+    if (reason) {
+      console.log(`  ${this.palette.dim('Reason:')} ${reason}`);
+    }
+
+    console.log();
+    console.log(
+      `  ${this.palette.stats('[y]es')} / ${this.palette.stats('[n]o')} / ${this.palette.stats('[a]lways allow')}`
+    );
+  }
+
+  /**
+   * Show permission result
+   */
+  showPermissionResult(allowed: boolean, always: boolean = false): void {
+    if (allowed) {
+      const msg = always ? 'Allowed (always)' : 'Allowed';
+      console.log(`  ${this.palette.success(symbols.check)} ${msg}`);
+    } else {
+      console.log(`  ${this.palette.error(symbols.cross)} Denied`);
+    }
+    console.log();
+  }
+
+  /**
    * Show session initialized
    */
   showSessionInit(tools: string[], mcpServers: string[]): void {
