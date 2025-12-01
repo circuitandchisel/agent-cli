@@ -1,0 +1,47 @@
+{
+  "name": "agent-cli",
+  "version": "1.0.0",
+  "description": "A polished CLI wrapper for the Claude Agent SDK",
+  "license": "MIT",
+  "author": "",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "agent-cli": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "cli",
+    "claude",
+    "ai",
+    "agent",
+    "anthropic"
+  ],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.0",
+    "chalk": "^5.3.0",
+    "cli-highlight": "^2.1.11",
+    "marked": "^15.0.0",
+    "marked-terminal": "^7.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
