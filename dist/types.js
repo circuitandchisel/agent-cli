@@ -2,7 +2,7 @@
  * Default configuration values
  */
 export const DEFAULT_CONFIG = {
-    model: 'claude-opus-4-5-20250514',
+    model: 'claude-opus-4-5-20251101',
     maxTurns: 50,
     permissionMode: 'bypassPermissions',
     ui: {
