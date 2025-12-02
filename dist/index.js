@@ -7,16 +7,21 @@ import { getPalette, symbols } from './output/colors.js';
  */
 async function main() {
     const palette = getPalette('default');
-    // Check for API key
+    // Check for API key or gateway authentication
     if (!hasApiKey()) {
         console.error();
-        console.error(`${palette.error(symbols.cross)} ANTHROPIC_API_KEY environment variable is not set`);
+        console.error(`${palette.error(symbols.cross)} No authentication configured`);
         console.error();
-        console.error('Please set your API key:');
+        console.error('Please set one of the following:');
         console.error(palette.dim('  export ANTHROPIC_API_KEY="your-api-key"'));
+        console.error(palette.dim('  export ANTHROPIC_AUTH_TOKEN="your-gateway-token"'));
+        console.error(palette.dim('  export ANTHROPIC_BASE_URL="https://your-gateway"'));
         console.error();
-        console.error('Get your API key from:');
+        console.error('Get an API key from:');
         console.error(palette.stats('  https://console.anthropic.com/'));
+        console.error();
+        console.error('For LLM gateway setup, see:');
+        console.error(palette.stats('  https://code.claude.com/docs/en/llm-gateway'));
         console.error();
         process.exit(1);
     }

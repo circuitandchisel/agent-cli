@@ -8,7 +8,7 @@ export declare function loadConfig(cwd?: string): Promise<Config>;
  */
 export declare function getConfigPath(cwd?: string): string | null;
 /**
- * Check if ANTHROPIC_API_KEY is set
+ * Check if authentication is configured (API key or gateway auth)
  */
 export declare function hasApiKey(): boolean;
 /**

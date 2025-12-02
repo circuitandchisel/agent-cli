@@ -90,10 +90,12 @@ export function getConfigPath(cwd = process.cwd()) {
     return null;
 }
 /**
- * Check if ANTHROPIC_API_KEY is set
+ * Check if authentication is configured (API key or gateway auth)
  */
 export function hasApiKey() {
-    return !!process.env.ANTHROPIC_API_KEY;
+    return !!(process.env.ANTHROPIC_API_KEY ||
+        process.env.ANTHROPIC_AUTH_TOKEN ||
+        process.env.ANTHROPIC_BASE_URL);
 }
 /**
  * Generate default config content
