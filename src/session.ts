@@ -35,6 +35,12 @@ export class Session {
       cwd: config.cwd || process.cwd(),
       includePartialMessages: true,
       canUseTool: this.handleCanUseTool.bind(this),
+      // Pass through gateway-related environment variables for LLM proxy support
+      env: {
+        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+        ANTHROPIC_AUTH_TOKEN: process.env.ANTHROPIC_AUTH_TOKEN,
+        ANTHROPIC_BASE_URL: process.env.ANTHROPIC_BASE_URL,
+      },
     });
 
     this.state = {
