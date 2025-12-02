@@ -1,4 +1,4 @@
-import { defineConfig } from './src/types.js';
+import { defineConfig } from './dist/types.js';
 
 export default defineConfig({
   // Model selection
