@@ -2,8 +2,8 @@ import type { InputEvent } from '../types.js';
 /**
  * Input handler managing terminal input with interrupt support
  * Supports multiline input via:
+ * - Option+Enter (Alt+Enter) to add a new line
  * - Backslash continuation (end line with \)
- * - Shift+Enter (on supported terminals)
  */
 export declare class InputHandler {
     private rl;
@@ -16,11 +16,12 @@ export declare class InputHandler {
     private captureBuffer;
     private multilineBuffer;
     private isMultilineMode;
+    private skipNextLine;
     private pendingResolve;
     private pendingPermissionResolve;
     constructor(colorScheme?: 'default' | 'light' | 'minimal');
     /**
-     * Set up raw mode handling for interrupt detection
+     * Set up raw mode handling for interrupt detection and Option+Enter
      */
     private setupRawMode;
     /**

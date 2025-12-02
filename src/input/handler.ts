@@ -5,8 +5,8 @@ import { getPalette, symbols } from '../output/colors.js';
 /**
  * Input handler managing terminal input with interrupt support
  * Supports multiline input via:
+ * - Option+Enter (Alt+Enter) to add a new line
  * - Backslash continuation (end line with \)
- * - Shift+Enter (on supported terminals)
  */
 export class InputHandler {
   private rl: readline.Interface;
@@ -23,6 +23,7 @@ export class InputHandler {
   // Multiline input handling
   private multilineBuffer: string[] = [];
   private isMultilineMode: boolean = false;
+  private skipNextLine: boolean = false;
 
   // Pending prompt resolver
   private pendingResolve: ((event: InputEvent) => void) | null = null;
@@ -59,18 +60,40 @@ export class InputHandler {
   }
 
   /**
-   * Set up raw mode handling for interrupt detection
+   * Set up raw mode handling for interrupt detection and Option+Enter
    */
   private setupRawMode(): void {
     if (!process.stdin.isTTY) return;
 
     process.stdin.on('keypress', (_str, key) => {
+      // Option+Enter (Alt+Enter) for multiline input
+      // On macOS, Option+Enter sends ESC + CR which sets key.meta = true
+      if (key && key.meta && (key.name === 'return' || key.name === 'enter')) {
+        // Get current line content from readline
+        const currentLine = (this.rl as any).line || '';
+
+        // Add to multiline buffer
+        this.multilineBuffer.push(currentLine);
+        this.isMultilineMode = true;
+        this.skipNextLine = true;
+
+        // Clear the current line display and show continuation
+        process.stdout.write('\n');
+        this.showContinuationPrompt();
+
+        // Clear readline's internal line buffer
+        (this.rl as any).line = '';
+        (this.rl as any).cursor = 0;
+        return;
+      }
+
       // Ctrl+C
       if (key && key.ctrl && key.name === 'c') {
         // Cancel multiline mode if active
         if (this.isMultilineMode) {
           this.multilineBuffer = [];
           this.isMultilineMode = false;
+          this.skipNextLine = false;
           console.log(); // New line
           this.showPrompt();
           return;
@@ -92,6 +115,13 @@ export class InputHandler {
    * Handle a line of input
    */
   private handleLine(line: string): void {
+    // Skip this line event if it was triggered by Option+Enter
+    // (we already handled it in the keypress handler)
+    if (this.skipNextLine) {
+      this.skipNextLine = false;
+      return;
+    }
+
     // Check if we're waiting for permission input
     if (this.pendingPermissionResolve) {
       const response = this.parsePermissionResponse(line.trim());
