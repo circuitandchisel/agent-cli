@@ -35,11 +35,13 @@ export class Session {
       cwd: config.cwd || process.cwd(),
       includePartialMessages: true,
       canUseTool: this.handleCanUseTool.bind(this),
-      // Pass through gateway-related environment variables for LLM proxy support
+      // Pass through all environment variables to the SDK subprocess.
+      // This is required because the SDK replaces (not merges) its default
+      // process.env when a custom env object is provided. Gateway-related
+      // vars like ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN must be
+      // inherited along with critical system vars (PATH, HOME, etc.)
       env: {
-        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
-        ANTHROPIC_AUTH_TOKEN: process.env.ANTHROPIC_AUTH_TOKEN,
-        ANTHROPIC_BASE_URL: process.env.ANTHROPIC_BASE_URL,
+        ...process.env,
       },
     });
 
