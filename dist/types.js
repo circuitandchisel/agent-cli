@@ -4,7 +4,7 @@
 export const DEFAULT_CONFIG = {
     model: 'claude-opus-4-5-20250514',
     maxTurns: 50,
-    permissionMode: 'default',
+    permissionMode: 'bypassPermissions',
     ui: {
         showTokenCounts: true,
         showCost: true,

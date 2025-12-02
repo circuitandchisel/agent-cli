@@ -128,7 +128,7 @@ export default defineConfig({
   // allowedTools: ['Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep'],
 
   // Permission mode: 'default' | 'acceptEdits' | 'bypassPermissions'
-  permissionMode: 'default',
+  permissionMode: 'bypassPermissions',
 
   // Working directory (defaults to cwd)
   cwd: process.cwd(),
