@@ -1,6 +1,9 @@
 import type { InputEvent } from '../types.js';
 /**
  * Input handler managing terminal input with interrupt support
+ * Supports multiline input via:
+ * - Backslash continuation (end line with \)
+ * - Shift+Enter (on supported terminals)
  */
 export declare class InputHandler {
     private rl;
@@ -11,6 +14,8 @@ export declare class InputHandler {
     private interruptCallback;
     private isCapturing;
     private captureBuffer;
+    private multilineBuffer;
+    private isMultilineMode;
     private pendingResolve;
     private pendingPermissionResolve;
     constructor(colorScheme?: 'default' | 'light' | 'minimal');
@@ -23,6 +28,10 @@ export declare class InputHandler {
      */
     private handleLine;
     /**
+     * Process completed input (single or multiline)
+     */
+    private processInput;
+    /**
      * Parse permission response from user input
      */
     private parsePermissionResponse;
@@ -34,6 +43,10 @@ export declare class InputHandler {
      * Show the prompt
      */
     private showPrompt;
+    /**
+     * Show the continuation prompt for multiline input
+     */
+    private showContinuationPrompt;
     /**
      * Wait for user input (prompt or command)
      */

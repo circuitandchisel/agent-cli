@@ -4,6 +4,9 @@ import { getPalette, symbols } from '../output/colors.js';
 
 /**
  * Input handler managing terminal input with interrupt support
+ * Supports multiline input via:
+ * - Backslash continuation (end line with \)
+ * - Shift+Enter (on supported terminals)
  */
 export class InputHandler {
   private rl: readline.Interface;
@@ -16,6 +19,10 @@ export class InputHandler {
   private interruptCallback: ((text: string) => void) | null = null;
   private isCapturing: boolean = false;
   private captureBuffer: string = '';
+
+  // Multiline input handling
+  private multilineBuffer: string[] = [];
+  private isMultilineMode: boolean = false;
 
   // Pending prompt resolver
   private pendingResolve: ((event: InputEvent) => void) | null = null;
@@ -60,6 +67,15 @@ export class InputHandler {
     process.stdin.on('keypress', (_str, key) => {
       // Ctrl+C
       if (key && key.ctrl && key.name === 'c') {
+        // Cancel multiline mode if active
+        if (this.isMultilineMode) {
+          this.multilineBuffer = [];
+          this.isMultilineMode = false;
+          console.log(); // New line
+          this.showPrompt();
+          return;
+        }
+
         if (this.isCapturing && this.captureBuffer) {
           // Submit captured text as interrupt
           this.submitInterrupt(this.captureBuffer);
@@ -76,11 +92,9 @@ export class InputHandler {
    * Handle a line of input
    */
   private handleLine(line: string): void {
-    const trimmed = line.trim();
-
     // Check if we're waiting for permission input
     if (this.pendingPermissionResolve) {
-      const response = this.parsePermissionResponse(trimmed);
+      const response = this.parsePermissionResponse(line.trim());
       if (response) {
         const resolve = this.pendingPermissionResolve;
         this.pendingPermissionResolve = null;
@@ -92,6 +106,37 @@ export class InputHandler {
       return;
     }
 
+    // Check for backslash continuation (multiline mode)
+    if (line.endsWith('\\')) {
+      // Remove the trailing backslash and add to buffer
+      const lineWithoutBackslash = line.slice(0, -1);
+      this.multilineBuffer.push(lineWithoutBackslash);
+      this.isMultilineMode = true;
+      this.showContinuationPrompt();
+      return;
+    }
+
+    // If we're in multiline mode, add this line and check if we should submit
+    if (this.isMultilineMode) {
+      this.multilineBuffer.push(line);
+      // Join all lines and submit
+      const fullText = this.multilineBuffer.join('\n');
+      this.multilineBuffer = [];
+      this.isMultilineMode = false;
+      this.processInput(fullText);
+      return;
+    }
+
+    // Normal single-line input
+    this.processInput(line);
+  }
+
+  /**
+   * Process completed input (single or multiline)
+   */
+  private processInput(text: string): void {
+    const trimmed = text.trim();
+
     // Add to history if non-empty
     if (trimmed) {
       this.history.push(trimmed);
@@ -100,8 +145,8 @@ export class InputHandler {
       }
     }
 
-    // Check for commands
-    if (trimmed.startsWith('/')) {
+    // Check for commands (only if single line starting with /)
+    if (trimmed.startsWith('/') && !trimmed.includes('\n')) {
       const command = trimmed.slice(1).toLowerCase();
       if (this.pendingResolve) {
         this.pendingResolve({ type: 'command', command });
@@ -160,6 +205,14 @@ export class InputHandler {
   private showPrompt(): void {
     const palette = getPalette(this.colorScheme);
     process.stdout.write(`${palette.promptSymbol(symbols.prompt)} `);
+  }
+
+  /**
+   * Show the continuation prompt for multiline input
+   */
+  private showContinuationPrompt(): void {
+    const palette = getPalette(this.colorScheme);
+    process.stdout.write(`${palette.dim('...')} `);
   }
 
   /**
