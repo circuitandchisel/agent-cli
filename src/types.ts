@@ -50,7 +50,7 @@ export interface ResultStats {
  * Default configuration values
  */
 export const DEFAULT_CONFIG: Config = {
-  model: 'claude-sonnet-4-5-20250929',
+  model: 'claude-opus-4-5-20250514',
   maxTurns: 50,
   permissionMode: 'default',
   ui: {

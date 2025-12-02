@@ -2,7 +2,7 @@
  * Default configuration values
  */
 export const DEFAULT_CONFIG = {
-    model: 'claude-sonnet-4-5-20250929',
+    model: 'claude-opus-4-5-20250514',
     maxTurns: 50,
     permissionMode: 'default',
     ui: {

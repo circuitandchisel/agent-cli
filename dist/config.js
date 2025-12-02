@@ -103,7 +103,7 @@ export function generateDefaultConfig() {
 
 export default defineConfig({
   // Model selection
-  model: 'claude-sonnet-4-5-20250929',
+  model: 'claude-opus-4-5-20250514',
 
   // Execution limits
   maxTurns: 50,
