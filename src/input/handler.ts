@@ -31,6 +31,10 @@ export class InputHandler {
   // Permission prompt resolver
   private pendingPermissionResolve: ((response: 'yes' | 'no' | 'always') => void) | null = null;
 
+  // Exit confirmation - require Ctrl+C twice within timeout to exit
+  private lastCtrlCTime: number = 0;
+  private readonly ctrlCTimeoutMs: number = 2000; // 2 seconds to press Ctrl+C again
+
   constructor(colorScheme: 'default' | 'light' | 'minimal' = 'default') {
     this.colorScheme = colorScheme;
 
@@ -104,8 +108,20 @@ export class InputHandler {
           this.submitInterrupt(this.captureBuffer);
           this.captureBuffer = '';
         } else {
-          // Exit
-          process.emit('SIGINT');
+          // Require Ctrl+C twice within timeout to exit
+          const now = Date.now();
+          const palette = getPalette(this.colorScheme);
+
+          if (now - this.lastCtrlCTime < this.ctrlCTimeoutMs) {
+            // Second Ctrl+C within timeout - exit
+            process.emit('SIGINT');
+          } else {
+            // First Ctrl+C - show warning and wait for second
+            this.lastCtrlCTime = now;
+            console.log();
+            console.log(palette.warning('Press Ctrl+C again to exit'));
+            this.showPrompt();
+          }
         }
       }
     });

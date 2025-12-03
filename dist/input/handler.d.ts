@@ -19,6 +19,8 @@ export declare class InputHandler {
     private skipNextLine;
     private pendingResolve;
     private pendingPermissionResolve;
+    private lastCtrlCTime;
+    private readonly ctrlCTimeoutMs;
     constructor(colorScheme?: 'default' | 'light' | 'minimal');
     /**
      * Set up raw mode handling for interrupt detection and Option+Enter
