@@ -38,8 +38,6 @@ export class InputHandler {
   constructor(colorScheme: 'default' | 'light' | 'minimal' = 'default') {
     this.colorScheme = colorScheme;
 
-    console.error('[DEBUG] InputHandler: Creating readline interface...');
-
     this.rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
@@ -48,17 +46,13 @@ export class InputHandler {
       prompt: '',
     });
 
-    console.error('[DEBUG] InputHandler: readline interface created');
-
     // Handle line input
     this.rl.on('line', (line) => {
-      console.error(`[DEBUG] InputHandler: received line: "${line}"`);
       this.handleLine(line);
     });
 
     // Handle close
     this.rl.on('close', () => {
-      console.error('[DEBUG] InputHandler: readline close event fired');
       if (this.pendingResolve) {
         this.pendingResolve({ type: 'exit' });
         this.pendingResolve = null;
