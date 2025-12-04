@@ -10,6 +10,11 @@ import { getPalette, symbols } from './output/colors.js';
 async function main(): Promise<void> {
   const palette = getPalette('default');
 
+  // Debug: Log TTY state for diagnosing Daytona PTY issues
+  console.error(`[DEBUG] stdin.isTTY: ${process.stdin.isTTY}`);
+  console.error(`[DEBUG] stdout.isTTY: ${process.stdout.isTTY}`);
+  console.error(`[DEBUG] stdin.readable: ${process.stdin.readable}`);
+
   // Check for API key or gateway authentication
   if (!hasApiKey()) {
     console.error();
